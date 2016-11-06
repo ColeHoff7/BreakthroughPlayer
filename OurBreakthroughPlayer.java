@@ -58,9 +58,16 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 	public GameMove getMove(GameState brd, String lastMove)
 	{
-		for(int i = 0; i < depthLimit; i++){
-			alphabeta((BreakthroughState)brd, i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-		}
+//		int i = 1;
+//		int depth = depthLimit;
+//		long start = System.currentTimeMillis();
+//	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+//	    depthLimit = i;
+//		while(i < depth && (start-System.currentTimeMillis())< 400 && moves[0].score!=bestScore){
+			alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+//			i++;
+//			depthLimit = i;
+//		}
 		return moves[0];
 		
 	}
@@ -90,7 +97,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
     //System.out.println("-----------STARTING NEW-------------");
     double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
     if(isTerminal){
-    	moves[currDepth].set(0,0,0,0, bestScore);
+    	moves[currDepth].set(0,0,0,0, bestScore );
     }else if(currDepth == depthLimit){
       moves[currDepth].set(0,0,0,0,evalBoard(brd));
     }else {
@@ -110,22 +117,19 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
       for(BreakthroughMove mv : poss){
         temp.set(mv);
-        BreakthroughState brd2 = (BreakthroughState) brd.clone();
-        brd2.makeMove(temp);
-     	char ch = brd.board[temp.endingRow][temp.endingCol];
+        char ch = brd.board[temp.endingRow][temp.endingCol];
      	char pl = brd.board[temp.startRow][temp.startCol];
-
-        alphabeta(brd2, currDepth+1, alpha, beta);
+        brd.makeMove(temp);
+        alphabeta(brd, currDepth+1, alpha, beta);
         
         //System.out.println(gameState.toString());
         
         //reverting move
-        /*char PLAYER = currTurn == GameState.Who.HOME ? BreakthroughState.homeSym : BreakthroughState.awaySym;
         brd.board[temp.startRow][temp.startCol] = pl;//PLAYER;
   		brd.board[temp.endingRow][temp.endingCol] = ch;
-       // brd.numMoves--;
+        brd.numMoves--;
         brd.status = GameState.Status.GAME_ON;
-        brd.who = currTurn;*/
+        brd.who = currTurn;
 
         if(toMaximize && nextMove.score > bestMove.score){
           bestMove.set(mv, nextMove.score);
