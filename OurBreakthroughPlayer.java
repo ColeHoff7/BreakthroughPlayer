@@ -37,9 +37,7 @@ class ScoredBreakthroughMove extends BreakthroughMove {
 }
 
 public class OurBreakthroughPlayer extends GamePlayer {
-	public int depthLimit = 5;
-	public final int MAX_SCORE = 1000; // Fix this later
-	
+	public int depthLimit = 5;	
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR  = 0.1f;
 	public static float MAX_DIST_FACTOR = 0.2f;
@@ -74,17 +72,16 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public GameMove getMove(GameState brd, String lastMove)
 	{
 //		int i = 1;
-//		int depth = depthLimit;
+//		int depth = 5;
 //		long start = System.currentTimeMillis();
 //	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 //	    depthLimit = i;
-//		while(i < depth && (start-System.currentTimeMillis())< 400 && moves[0].score!=bestScore){
+//		while(i != depth && (start-System.currentTimeMillis())< 300 && moves[0].score!=bestScore){
 			alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 //			i++;
 //			depthLimit = i;
 //		}
 		return moves[0];
-		
 	}
 
   protected boolean terminalValue(GameState brd, ScoredBreakthroughMove mv){
@@ -155,12 +152,12 @@ public class OurBreakthroughPlayer extends GamePlayer {
      // Update alpha and beta. Perform pruning, if possible.
         if (toMinimize) {
         	beta = Math.min(bestMove.score, beta);
-  		if (bestMove.score <= alpha || bestMove.score == -MAX_SCORE) {
+  		if (bestMove.score <= alpha) {
   			return;
   		}
         } else {
         	alpha = Math.max(bestMove.score, alpha);
-	  		if (bestMove.score >= beta || bestMove.score == MAX_SCORE) {
+	  		if (bestMove.score >= beta) {
 	  			return;
 	  		}
         }
