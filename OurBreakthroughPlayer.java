@@ -77,9 +77,9 @@ public class OurBreakthroughPlayer extends GamePlayer {
     boolean isTerminal = true;
 
     if(status == GameState.Status.HOME_WIN){
-      mv.set(0,0,0,0,MAX_SCORE);
+      mv.set(0,0,0,0,Double.POSITIVE_INFINITY);
     }else if (status == GameState.Status.AWAY_WIN){
-      mv.set(0,0,0,0,-MAX_SCORE);
+      mv.set(0,0,0,0,Double.NEGATIVE_INFINITY);
     }else if(status == GameState.Status.DRAW){
       mv.set(0,0,0,0,0);
     }
