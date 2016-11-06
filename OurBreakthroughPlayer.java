@@ -71,21 +71,21 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	
 	public GameMove getMove(GameState brd, String lastMove)
 	{
-		int depth = depthLimit;
-		long start = System.currentTimeMillis();
-	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-	    depthLimit = 1;
-		while((System.currentTimeMillis()-start)< 50){// && moves[0].score != bestScore){
-			if(depthLimit >= depth){
-				moves = new ScoredBreakthroughMove[depthLimit+1];
-				for(int i = 0; i < moves.length; i++){
-					moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
-				}	
-			}
+//		int depth = depthLimit;
+//		long start = System.currentTimeMillis();
+//	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+//	    depthLimit = 1;
+//		while((System.currentTimeMillis()-start)< 50){// && moves[0].score != bestScore){
+//			if(depthLimit >= depth){
+//				moves = new ScoredBreakthroughMove[depthLimit+1];
+//				for(int i = 0; i < moves.length; i++){
+//					moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
+//				}	
+//			}
 			alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-			depthLimit ++;
-			System.out.println(depthLimit);
-		}
+//			depthLimit ++;
+//			System.out.println(depthLimit);
+//		}
 		return moves[0];
 	}
 
