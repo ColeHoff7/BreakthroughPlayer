@@ -15,7 +15,6 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	public static int depthLimit = 4;
 	
-
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR  = 0.1f;
 	public static float MAX_DIST_FACTOR = 0.2f;
@@ -59,8 +58,6 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	        brd.makeMove(mv);
 	        
 	        
-	        // ****** THIS IS WHERE THREADING WILL TAKE PLACE ************
-	        
 	        double temp = alphabeta(board, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 	        
 	        if(toMaximize && temp > bestVal){
@@ -83,6 +80,26 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		return bestMove;
 		
+
+		/*  FROM HARRISON, I (MATT) WILL EVENTUALLY INTEGRATE THIS INTO THE ABOVE THREADING STUFF
+		
+		int depth = depthLimit;
+		long start = System.currentTimeMillis();
+	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+	    depthLimit = 1;
+		while((System.currentTimeMillis()-start)< 50){// && moves[0].score != bestScore){
+			if(depthLimit >= depth){
+				moves = new ScoredBreakthroughMove[depthLimit+1];
+				for(int i = 0; i < moves.length; i++){
+					moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
+				}	
+			}
+			alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+			depthLimit ++;
+			System.out.println(depthLimit);
+		}
+		return moves[0];
+		*/
 	}
 
   private double alphabeta(BreakthroughState brd, int currDepth, double alpha, double beta){
