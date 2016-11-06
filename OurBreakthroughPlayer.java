@@ -12,8 +12,10 @@ import java.util.Random;
 
 
 public class OurBreakthroughPlayer extends GamePlayer {
+
 	public static int depthLimit = 4;
 	
+
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR  = 0.1f;
 	public static float MAX_DIST_FACTOR = 0.2f;
@@ -56,6 +58,8 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	     	char pl = board.board[mv.startRow][mv.startCol];
 	        brd.makeMove(mv);
 	        
+	        
+	        // ****** THIS IS WHERE THREADING WILL TAKE PLACE ************
 	        
 	        double temp = alphabeta(board, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 	        
