@@ -40,10 +40,10 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public int depthLimit = 5;
 	public final int MAX_SCORE = 1000; // Fix this later
 	
-	public static final float COUNT_FACTOR = 0.5f;
-	public static final float JEP_FACTOR  = 0.0f;
-	public static final float MAX_DIST_FACTOR = 0.2f;
-	public static final float AVG_DIST_FACTOR = 0.1f;
+	public static float COUNT_FACTOR = 0.5f;
+	public static float JEP_FACTOR  = 0.1f;
+	public static float MAX_DIST_FACTOR = 0.2f;
+	public static float AVG_DIST_FACTOR = 0.1f;
 
 	protected ScoredBreakthroughMove [] moves;
 	
@@ -56,6 +56,21 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		}
 		
 	}
+	
+	//constructor for getting ideal eval function
+	public OurBreakthroughPlayer(String n, float count, float jep, float max, float avg)
+	{
+		super(n, "Breakthrough");
+		moves = new ScoredBreakthroughMove[depthLimit+1];
+		for(int i = 0; i < moves.length; i++){
+			moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
+		}
+		COUNT_FACTOR = count;
+		JEP_FACTOR = jep;
+		MAX_DIST_FACTOR = max;
+		AVG_DIST_FACTOR = avg;
+	}
+	
 	public GameMove getMove(GameState brd, String lastMove)
 	{
 		alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -164,35 +179,27 @@ private double evalBoard(BreakthroughState brd) {
 				homeCount++;
 				totalDistanceH += i;
 				if(i > maxDistH) maxDistH = i;
-				/*if(j != 0){
+				if(j != 0){
 					if(brd.board[i+1][j-1] == BreakthroughState.awaySym) numJepH++;
 				}
 				if(j != (brd.N-1) ){
 					if(brd.board[i+1][j+1] == BreakthroughState.awaySym) numJepH++;
 				}
-				if(brd.board[i+1][j] == BreakthroughState.awaySym) numJepH++;*/
+				if(brd.board[i+1][j] == BreakthroughState.awaySym) numJepH++;
 			}else if(c == BreakthroughState.awaySym){
 				awayCount++;
 				totalDistanceA += (brd.N-1-i);
 				if((brd.N-1-i) > maxDistA) maxDistA = (brd.N-1-i);
-				/*if(j != 0){
+				if(j != 0){
 					if(brd.board[i-1][j-1] == BreakthroughState.homeSym) numJepA++;
 				}
 				if(j != (brd.N-1) ){
 					if(brd.board[i-1][j+1] == BreakthroughState.homeSym) numJepA++;
 				}
-				if(brd.board[i-1][j] == BreakthroughState.homeSym) numJepA++;*/
+				if(brd.board[i-1][j] == BreakthroughState.homeSym) numJepA++;
 			}else{
 				// square was blank
 			}
-			/*char c = brd.board[i][j];
-			if(c == BreakthroughState.homeSym){
-				homeCount++;
-			}else if(c == BreakthroughState.awaySym){
-				awayCount++;
-			}else{
-				
-			}*/
 		}
 	
 	}
@@ -202,7 +209,6 @@ private double evalBoard(BreakthroughState brd) {
 	float score = COUNT_FACTOR*(homeCount-awayCount) - JEP_FACTOR*(numJepH - numJepA) + 
 			MAX_DIST_FACTOR*(maxDistH - maxDistA) + AVG_DIST_FACTOR*(avgDistanceH-avgDistanceA);
 	return score;
-	//return homeCount-awayCount;
 }
 private static ArrayList<BreakthroughMove> getPossibleMoves(BreakthroughState brd){
 	
