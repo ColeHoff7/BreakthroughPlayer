@@ -88,13 +88,14 @@ public class OurBreakthroughPlayer extends GamePlayer {
     
     boolean isTerminal = terminalValue(brd, moves[currDepth]);
     //System.out.println("-----------STARTING NEW-------------");
+    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
     if(isTerminal){
-      ;
+    	moves[currDepth].set(0,0,0,0, bestScore);
     }else if(currDepth == depthLimit){
       moves[currDepth].set(0,0,0,0,evalBoard(brd));
     }else {
       ScoredBreakthroughMove temp = new ScoredBreakthroughMove(0,0,0,0,0);
-      double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+      
 
       ScoredBreakthroughMove bestMove = moves[currDepth];
       ScoredBreakthroughMove nextMove = moves[currDepth+1];
