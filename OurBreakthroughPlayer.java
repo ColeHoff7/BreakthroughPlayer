@@ -58,8 +58,11 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 	public GameMove getMove(GameState brd, String lastMove)
 	{
-		alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+		for(int i = 0; i < depthLimit; i++){
+			alphabeta((BreakthroughState)brd, i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+		}
 		return moves[0];
+		
 	}
 
   protected boolean terminalValue(GameState brd, ScoredBreakthroughMove mv){
