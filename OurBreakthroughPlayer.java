@@ -66,7 +66,7 @@ class ScoredMove implements Comparable<ScoredMove>{
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 6;
+	public static int depthLimit = 7;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
