@@ -28,12 +28,12 @@ class DecisionThread implements Runnable{
 	
 	public void run(){
 		
-		System.out.println("Starting a thread...");
+		//System.out.println("Starting a thread...");
 		
 		double val = OurBreakthroughPlayer.getMoveValue(board, move);
 		results.add(new ScoredMove(move, val, toMaximize));
 		
-		System.out.println("A thread ended...");
+		//System.out.println("A thread ended...");
 	}
 	
 }
@@ -53,16 +53,20 @@ class ScoredMove implements Comparable<ScoredMove>{
 	@Override
 	public int compareTo(ScoredMove o) {
 		
-		if(this.score > o.score) return toMaximize ? 1 : -1;
-		else if(this.score < o.score) return toMaximize ? -1 : 1;
+		if(this.score > o.score) return toMaximize ? -1 : 1;
+		else if(this.score < o.score) return toMaximize ? 1 : -1;
 		else return 0;
+	}
+	
+	public String toString(){
+		return move+": "+score;
 	}
 }
 
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 5;
+	public static int depthLimit = 7;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
@@ -119,15 +123,18 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		int n = decisionThreads.size();
 		
 		
-		// ***** Need to find a better way to do this
+		// ***** Need to find a better way to do this, with join?
 		while(i < n){
-			while(decisionThreads.get(i).isAlive()){ }
+			if(decisionThreads.get(i).isAlive()){
+				try{
+					decisionThreads.get(i).join();
+				}catch(Exception e){}
+			}
+			
 			i++;
 		}
 		
 		BreakthroughMove bestMove = DecisionThread.results.peek().move;
-		
-		System.out.println("Best Move Score Was: "+DecisionThread.results.peek().score);
 		
 		DecisionThread.results.clear();
 
