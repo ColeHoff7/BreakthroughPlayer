@@ -42,7 +42,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public static float JEP_FACTOR  = 0.1f;
 	public static float MAX_DIST_FACTOR = 0.2f;
 	public static float AVG_DIST_FACTOR = 0.1f;
-
+	//public static int turns = 0;
 	protected ScoredBreakthroughMove [] moves;
 	
 	public OurBreakthroughPlayer(String n)
@@ -71,7 +71,8 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	
 	public GameMove getMove(GameState brd, String lastMove)
 	{
-		int depth = 10;
+		//turns++;
+		int depth = depthLimit; //+ (turns/20);
 		long start = System.currentTimeMillis();
 	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 	    depthLimit = 1;
