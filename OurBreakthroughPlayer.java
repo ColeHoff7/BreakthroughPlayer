@@ -75,7 +75,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		long start = System.currentTimeMillis();
 	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 	    depthLimit = 1;
-		while((System.currentTimeMillis()-start)< 50){// && moves[0].score != bestScore){
+		while((System.currentTimeMillis()-start)< 500){// && moves[0].score != bestScore){
 			if(depthLimit >= depth){
 				moves = new ScoredBreakthroughMove[depthLimit+1];
 				for(int i = 0; i < moves.length; i++){
@@ -114,7 +114,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
     //System.out.println("-----------STARTING NEW-------------");
     double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
     if(isTerminal){
-    	moves[currDepth].set(0,0,0,0, bestScore );
+    	moves[currDepth].set(0,0,0,0, bestScore);
     }else if(currDepth == depthLimit){
       moves[currDepth].set(0,0,0,0,evalBoard(brd));
     }else {
@@ -270,7 +270,7 @@ private static ArrayList<BreakthroughMove> getPossibleMoves(BreakthroughState br
 	public static void main(String [] args)
 	{
 		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISONPOWERHOUR");
-		p.compete(args);
-		//p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+		//p.compete(args);
+		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
