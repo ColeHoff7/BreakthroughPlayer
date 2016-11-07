@@ -71,17 +71,17 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	
 	public GameMove getMove(GameState brd, String lastMove)
 	{
-		int depth = 7;
+		int depth = 10;
 		long start = System.currentTimeMillis();
 	    double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 	    depthLimit = 1;
 		while(depthLimit < depth){//(System.currentTimeMillis()-start)< 200){// && moves[0].score != bestScore){
-			if(depthLimit >= depth){
-				moves = new ScoredBreakthroughMove[depthLimit+1];
-				for(int i = 0; i < moves.length; i++){
-					moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
-				}	
-			}
+			
+			moves = new ScoredBreakthroughMove[depthLimit+1];
+			for(int i = 0; i < moves.length; i++){
+				moves[i] = new ScoredBreakthroughMove(0,0,0,0,0);
+			}	
+			
 			alphabeta((BreakthroughState)brd, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 			depthLimit ++;
 			System.out.println(depthLimit);
