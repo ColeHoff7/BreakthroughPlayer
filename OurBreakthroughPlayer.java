@@ -29,10 +29,15 @@ class DecisionThread implements Runnable{
 	public void run(){
 		
 		//System.out.println("Starting a thread...");
-		
-		double val = OurBreakthroughPlayer.getMoveValue(board, move);
-//		results.add(new ScoredMove(move, val, toMaximize));
-		setBestMove(move, val);
+		int depthLimit = 1;
+		long startTime = System.currentTimeMillis();
+		while(System.currentTimeMillis()-startTime < 200 && depthLimit <= 9){
+			double val = OurBreakthroughPlayer.getMoveValue(board, move, depthLimit);
+	//		results.add(new ScoredMove(move, val, toMaximize));
+			setBestMove(move, val);
+			//System.out.println(depthLimit);
+			depthLimit++;
+		}
 		//System.out.println("A thread ended...");
 	}
 	
@@ -51,7 +56,7 @@ class DecisionThread implements Runnable{
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 5;
+	//public static int depthLimit = 5;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
@@ -121,9 +126,12 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		// ***** Need to find a better way to do this, with join?
 		while(i < n){
-			if(decisionThreads.get(i).isAlive()){}
+			if(decisionThreads.get(i).isAlive()){
+				
+			}else{
+				i++;
+			}
 			
-			i++;
 		}
 		
 		bestMove = DecisionThread.bestMove;
@@ -166,16 +174,16 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		 */
 	}
 
-	public static double getMoveValue(BreakthroughState board, BreakthroughMove move) {
-
+	public static double getMoveValue(BreakthroughState board, BreakthroughMove move, int depthLimit) {
+		
 		GameState.Who currTurn = board.getWho();
 
 		char ch = board.board[move.endingRow][move.endingCol];
 		char pl = board.board[move.startRow][move.startCol];
 		board.makeMove(move);
-
+		
 		double val = alphabeta(board, 1, Double.NEGATIVE_INFINITY,
-				Double.POSITIVE_INFINITY);
+				Double.POSITIVE_INFINITY, depthLimit);
 
 		// System.out.println(gameState.toString());
 
@@ -191,17 +199,19 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 
 	private static double alphabeta(BreakthroughState brd, int currDepth,
-			double alpha, double beta) {
+			double alpha, double beta, int depthLimit) {
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
 		boolean toMinimize = !toMaximize;
 
 		boolean isTerminal = brd.status != GameState.Status.GAME_ON;
 		// System.out.println("-----------STARTING NEW-------------");
-		double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY
-				: Double.POSITIVE_INFINITY;
+		double bestScore = (brd.getWho() == GameState.Who.HOME) ? -Double.MAX_VALUE/currDepth
+				: Double.MAX_VALUE/currDepth;
 		if (isTerminal) {
+			
 			return bestScore;
 		} else if (currDepth == depthLimit) {
+			
 			return evalBoard(brd);
 		}
 
@@ -215,7 +225,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			char pl = brd.board[mv.startRow][mv.startCol];
 			brd.makeMove(mv);
 
-			double temp = alphabeta(brd, currDepth + 1, alpha, beta);
+			double temp = alphabeta(brd, currDepth + 1, alpha, beta, depthLimit);
 
 			// System.out.println(gameState.toString());
 
@@ -235,12 +245,12 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			// Update alpha and beta. Perform pruning, if possible.
 			if (toMinimize) {
 				beta = Math.min(bestScore, beta);
-				if (bestScore <= alpha || bestScore == Double.NEGATIVE_INFINITY) {
+				if (bestScore <= alpha) {
 					return bestScore;
 				}
 			} else {
 				alpha = Math.max(bestScore, alpha);
-				if (bestScore >= beta || bestScore == Double.POSITIVE_INFINITY) {
+				if (bestScore >= beta) {
 					return bestScore;
 				}
 			}
@@ -363,7 +373,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public static void main(String[] args) {
 		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISON");
 
-		p.compete(args);
-//		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+//		p.compete(args);
+		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
