@@ -94,7 +94,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		BreakthroughState board = (BreakthroughState)brd;
 
 		ArrayList<BreakthroughMove> poss = getPossibleMoves(board);
-		//shuffle(poss);
+		shuffle(poss);
 
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
 		

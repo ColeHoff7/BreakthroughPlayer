@@ -130,7 +130,7 @@ public class TestBreakthroughPlayer extends GamePlayer {
       GameState.Who currTurn = brd.getWho();
 
       ArrayList<BreakthroughMove> poss = getPossibleMoves(brd);
-      //shuffle(poss);
+      shuffle(poss);
 
       for(BreakthroughMove mv : poss){
         temp.set(mv);
