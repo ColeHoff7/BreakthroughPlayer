@@ -8,22 +8,22 @@ import game.GameState;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 
 class DecisionThread implements Runnable{
 	
-	static PriorityQueue<ScoredMove> results = new PriorityQueue<ScoredMove>();
-	
+//	static PriorityQueue<ScoredMove> results = new PriorityQueue<ScoredMove>();
+	static BreakthroughMove bestMove;
+	static double bestMoveVal;
 	BreakthroughState board;
 	BreakthroughMove move;
-	boolean toMaximize;
+	static boolean toMaximize;
 	
-	public DecisionThread(BreakthroughState board, BreakthroughMove move, boolean toMaximize){
+	public DecisionThread(BreakthroughState board, BreakthroughMove move){
 		this.board = board;
 		this.move = move;
-		this.toMaximize = toMaximize;
+//		this.toMaximize = toMaximize;
 	}
 	
 	public void run(){
@@ -31,42 +31,27 @@ class DecisionThread implements Runnable{
 		//System.out.println("Starting a thread...");
 		
 		double val = OurBreakthroughPlayer.getMoveValue(board, move);
-		results.add(new ScoredMove(move, val, toMaximize));
-		
+//		results.add(new ScoredMove(move, val, toMaximize));
+		setBestMove(move, val);
 		//System.out.println("A thread ended...");
 	}
 	
-}
-
-class ScoredMove implements Comparable<ScoredMove>{
-	
-	BreakthroughMove move;
-	double score;
-	boolean toMaximize;
-	
-	public ScoredMove(BreakthroughMove mv, double score, boolean toMaximize){
-		this.move = mv;
-		this.score = score;
-		this.toMaximize = toMaximize;
-	}
-
-	@Override
-	public int compareTo(ScoredMove o) {
-		
-		if(this.score > o.score) return toMaximize ? -1 : 1;
-		else if(this.score < o.score) return toMaximize ? 1 : -1;
-		else return 0;
+	public static synchronized void setBestMove(BreakthroughMove a, double score){
+		if(toMaximize && score>bestMoveVal){
+			bestMoveVal = score;
+			bestMove = a;
+		}else if(!toMaximize && score<bestMoveVal){
+			bestMoveVal = score;
+			bestMove = a;
+		}
 	}
 	
-	public String toString(){
-		return move+": "+score;
-	}
 }
 
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 8;
+	public static int depthLimit = 5;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
@@ -109,7 +94,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		BreakthroughState board = (BreakthroughState)brd;
 
 		ArrayList<BreakthroughMove> poss = getPossibleMoves(board);
-		shuffle(poss);
+		//shuffle(poss);
 
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
 		
@@ -117,11 +102,14 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		
 		
-		decisionThreads.clear();
 		
+		DecisionThread.bestMoveVal = toMaximize ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		DecisionThread.toMaximize = toMaximize;
+		
+		decisionThreads.clear();
 		for (BreakthroughMove mv : poss) {
 
-			Thread dt = new Thread(new DecisionThread((BreakthroughState)board.clone(), mv, toMaximize));
+			Thread dt = new Thread(new DecisionThread((BreakthroughState)board.clone(), mv));
 			decisionThreads.add(dt);
 			dt.start();
 
@@ -133,17 +121,14 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		// ***** Need to find a better way to do this, with join?
 		while(i < n){
-			if(decisionThreads.get(i).isAlive()){
-				try{
-					decisionThreads.get(i).join();
-				}catch(Exception e){}
-			}
+			if(decisionThreads.get(i).isAlive()){}
 			
 			i++;
 		}
-		bestMove = DecisionThread.results.peek().move;
 		
-		DecisionThread.results.clear();
+		bestMove = DecisionThread.bestMove;
+		
+//		DecisionThread.results.clear();
 
 		return bestMove;
 
@@ -376,9 +361,9 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 
 	public static void main(String[] args) {
-		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISONPOWERHOUR");
+		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISON");
 
 		p.compete(args);
-		// p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+//		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
