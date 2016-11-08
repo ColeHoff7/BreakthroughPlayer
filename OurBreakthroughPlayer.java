@@ -30,10 +30,15 @@ class DecisionThread implements Runnable{
 		
 		//System.out.println("Starting a thread...");
 		int depthLimit = 1;
-		long startTime = System.currentTimeMillis();
-		while(System.currentTimeMillis()-startTime < 200 && depthLimit <= 9){
+		//long startTime = System.currentTimeMillis();
+		while(true){// && depthLimit <= 9){
 			double val = OurBreakthroughPlayer.getMoveValue(board, move, depthLimit);
 	//		results.add(new ScoredMove(move, val, toMaximize));
+			if(Double.isNaN(val)) {
+				System.out.println("The thread died trying to run depth "+depthLimit);
+				break;
+			}
+			
 			setBestMove(move, val);
 			//System.out.println(depthLimit);
 			depthLimit++;
@@ -62,6 +67,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public static float JEP_FACTOR = 0.1f;
 	public static float MAX_DIST_FACTOR = 0.2f;
 	public static float AVG_DIST_FACTOR = 0.1f;
+	
 	//public static int turns = 0;
 	//protected ScoredBreakthroughMove [] moves;
 
@@ -107,7 +113,6 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		
 		
-		
 		DecisionThread.bestMoveVal = toMaximize ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 		DecisionThread.toMaximize = toMaximize;
 		
@@ -120,18 +125,15 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 		}
 		
-		int i = 0;
-		int n = decisionThreads.size();
+
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
-		
-		// ***** Need to find a better way to do this, with join?
-		while(i < n){
-			if(decisionThreads.get(i).isAlive()){
-				
-			}else{
-				i++;
-			}
-			
+		for(int i = 0; i < decisionThreads.size(); i++){
+			decisionThreads.get(i).interrupt();
 		}
 		
 		bestMove = DecisionThread.bestMove;
@@ -184,7 +186,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		double val = alphabeta(board, 1, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY, depthLimit);
-
+		//if(val == Double.NaN) System.out.println("Killed it");
 		// System.out.println(gameState.toString());
 
 		// reverting move
@@ -200,6 +202,14 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	private static double alphabeta(BreakthroughState brd, int currDepth,
 			double alpha, double beta, int depthLimit) {
+		
+		
+		if(Thread.interrupted()) {
+//			System.out.println("Thread Killed");
+			return Double.NaN;
+		}
+		
+		
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
 		boolean toMinimize = !toMaximize;
 
@@ -235,6 +245,11 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			brd.numMoves--;
 			brd.status = GameState.Status.GAME_ON;
 			brd.who = currTurn;
+			
+			if(Double.isNaN(temp)){
+				//System.out.println("Killed");
+				return temp;
+			}
 
 			if (toMaximize && temp > bestScore) {
 				bestScore = temp;
@@ -373,7 +388,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	public static void main(String[] args) {
 		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISON");
 
-//		p.compete(args);
-		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+		p.compete(args);
+//		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
