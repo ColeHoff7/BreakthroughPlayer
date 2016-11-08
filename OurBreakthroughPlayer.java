@@ -66,7 +66,7 @@ class ScoredMove implements Comparable<ScoredMove>{
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 6;
+	public static int depthLimit = 8;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
@@ -112,7 +112,11 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		shuffle(poss);
 
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
-
+		
+		BreakthroughMove bestMove;
+		
+		
+		
 		decisionThreads.clear();
 		
 		for (BreakthroughMove mv : poss) {
@@ -137,7 +141,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			
 			i++;
 		}
-		BreakthroughMove bestMove = DecisionThread.results.peek().move;
+		bestMove = DecisionThread.results.peek().move;
 		
 		DecisionThread.results.clear();
 
