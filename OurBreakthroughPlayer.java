@@ -35,7 +35,9 @@ class DecisionThread implements Runnable{
 			double val = OurBreakthroughPlayer.getMoveValue(board, move, depthLimit);
 	//		results.add(new ScoredMove(move, val, toMaximize));
 			if(Double.isNaN(val)) {
+
 				//System.out.println("The thread died trying to run depth "+depthLimit);
+
 				break;
 			}
 			
@@ -65,10 +67,13 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
+
 	public static float MAX_DIST_FACTOR = 0;//0.20f;
 	public static float MAX_HOLDER = .1f;
 	public static float AVG_DIST_FACTOR = 0.2f;
 	public static int time = 240*2;//BreakthroughState.gameParams.integer("MOVETIME");
+	public static int puzzleTime;
+
 	//public static int turns = 0;
 	//protected ScoredBreakthroughMove [] moves;
 
@@ -127,9 +132,13 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 		}
 		
+
 		int moves = brd.numMoves;
 		//System.out.println(brd.numMoves);
 		//determining sleepTime based on where you are in the game, assuming 100 moves total per game
+		
+		
+		
 		
 		if(moves > 6){
 			MAX_DIST_FACTOR = MAX_HOLDER;
@@ -145,6 +154,10 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			sleepTime = (int) ((18*time)-((.25*time)*(moves-35)));
 		}
 		
+		if(moves == 1){
+			//TODO set sleepTime for puzzles
+		}
+		
 		
 		try {
 			//System.out.printf("sleeping for %d", sleepTime);
@@ -152,7 +165,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 		for(int i = 0; i < decisionThreads.size(); i++){
 			decisionThreads.get(i).interrupt();
 		}
@@ -407,10 +420,13 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 
 	public static void main(String[] args) {
-		GamePlayer p = new OurBreakthroughPlayer(".5, .1, .1, .1");
-		time = p.tournamentParams.integer("GAMETIME") * 2;
 
-		p.compete(args);
-//		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+		GamePlayer p = new OurBreakthroughPlayer("Hashbrown");
+		time = p.tournamentParams.integer("GAMETIME") * 2;
+		puzzleTime = p.tournamentParams.integer("PUZZLEMOVE");
+
+
+		//p.compete(args);
+		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
