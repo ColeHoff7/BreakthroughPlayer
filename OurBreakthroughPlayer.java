@@ -8,70 +8,67 @@ import game.GameState;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 
 class DecisionThread implements Runnable{
 	
-	static PriorityQueue<ScoredMove> results = new PriorityQueue<ScoredMove>();
-	
+//	static PriorityQueue<ScoredMove> results = new PriorityQueue<ScoredMove>();
+	static BreakthroughMove bestMove;
+	static double bestMoveVal;
 	BreakthroughState board;
 	BreakthroughMove move;
-	boolean toMaximize;
+	static boolean toMaximize;
 	
-	public DecisionThread(BreakthroughState board, BreakthroughMove move, boolean toMaximize){
+	public DecisionThread(BreakthroughState board, BreakthroughMove move){
 		this.board = board;
 		this.move = move;
-		this.toMaximize = toMaximize;
+//		this.toMaximize = toMaximize;
 	}
 	
 	public void run(){
 		
 		//System.out.println("Starting a thread...");
-		
-		double val = OurBreakthroughPlayer.getMoveValue(board, move);
-		results.add(new ScoredMove(move, val, toMaximize));
-		
+		int depthLimit = 1;
+		//long startTime = System.currentTimeMillis();
+		while(true){// && depthLimit <= 9){
+			double val = OurBreakthroughPlayer.getMoveValue(board, move, depthLimit);
+	//		results.add(new ScoredMove(move, val, toMaximize));
+			if(Double.isNaN(val)) {
+				//System.out.println("The thread died trying to run depth "+depthLimit);
+				break;
+			}
+			
+			setBestMove(move, val);
+			//System.out.println(depthLimit);
+			depthLimit++;
+		}
 		//System.out.println("A thread ended...");
 	}
 	
-}
-
-class ScoredMove implements Comparable<ScoredMove>{
-	
-	BreakthroughMove move;
-	double score;
-	boolean toMaximize;
-	
-	public ScoredMove(BreakthroughMove mv, double score, boolean toMaximize){
-		this.move = mv;
-		this.score = score;
-		this.toMaximize = toMaximize;
-	}
-
-	@Override
-	public int compareTo(ScoredMove o) {
-		
-		if(this.score > o.score) return toMaximize ? -1 : 1;
-		else if(this.score < o.score) return toMaximize ? 1 : -1;
-		else return 0;
+	public static synchronized void setBestMove(BreakthroughMove a, double score){
+		if(toMaximize && score>bestMoveVal){
+			bestMoveVal = score;
+			bestMove = a;
+		}else if(!toMaximize && score<bestMoveVal){
+			bestMoveVal = score;
+			bestMove = a;
+		}
 	}
 	
-	public String toString(){
-		return move+": "+score;
-	}
 }
 
 
 public class OurBreakthroughPlayer extends GamePlayer {
 
-	public static int depthLimit = 6;
+	//public static int depthLimit = 5;
 
 	public static float COUNT_FACTOR = 0.5f;
 	public static float JEP_FACTOR = 0.1f;
-	public static float MAX_DIST_FACTOR = 0.2f;
-	public static float AVG_DIST_FACTOR = 0.1f;
+	public static float MAX_DIST_FACTOR = 0;//0.20f;
+	public static float MAX_HOLDER = .1f;
+	public static float AVG_DIST_FACTOR = 0.2f;
+	public static int time = 240*2;//BreakthroughState.gameParams.integer("MOVETIME");
 	//public static int turns = 0;
 	//protected ScoredBreakthroughMove [] moves;
 
@@ -94,7 +91,8 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 		COUNT_FACTOR = count;
 		JEP_FACTOR = jep;
-		MAX_DIST_FACTOR = max;
+		MAX_DIST_FACTOR = 0.0f;
+		MAX_HOLDER = max;
 		AVG_DIST_FACTOR = avg;
 		
 		
@@ -112,34 +110,56 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		shuffle(poss);
 
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
-
-		decisionThreads.clear();
 		
+		BreakthroughMove bestMove;
+		
+		
+		
+		DecisionThread.bestMoveVal = toMaximize ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		DecisionThread.toMaximize = toMaximize;
+		
+		decisionThreads.clear();
 		for (BreakthroughMove mv : poss) {
 
-			Thread dt = new Thread(new DecisionThread((BreakthroughState)board.clone(), mv, toMaximize));
+			Thread dt = new Thread(new DecisionThread((BreakthroughState)board.clone(), mv));
 			decisionThreads.add(dt);
 			dt.start();
 
 		}
 		
-		int i = 0;
-		int n = decisionThreads.size();
+		int moves = brd.numMoves;
+		//System.out.println(brd.numMoves);
+		//determining sleepTime based on where you are in the game, assuming 100 moves total per game
 		
-		
-		// ***** Need to find a better way to do this, with join?
-		while(i < n){
-			if(decisionThreads.get(i).isAlive()){
-				try{
-					decisionThreads.get(i).join();
-				}catch(Exception e){}
-			}
-			
-			i++;
+		if(moves > 6){
+			MAX_DIST_FACTOR = MAX_HOLDER;
 		}
-		BreakthroughMove bestMove = DecisionThread.results.peek().move;
+		int sleepTime;
+		if(moves <= 6){
+			sleepTime = 2 * time;
+		}else if(moves <= 20){
+			sleepTime = (3*time)+(moves-7)*(time*3);
+		}else if(moves <= 35){
+			sleepTime = 18*time;
+		}else{
+			sleepTime = (int) ((18*time)-((.25*time)*(moves-35)));
+		}
 		
-		DecisionThread.results.clear();
+		
+		try {
+			//System.out.printf("sleeping for %d", sleepTime);
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		for(int i = 0; i < decisionThreads.size(); i++){
+			decisionThreads.get(i).interrupt();
+		}
+		
+		bestMove = DecisionThread.bestMove;
+		
+//		DecisionThread.results.clear();
 
 		return bestMove;
 
@@ -177,17 +197,17 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		 */
 	}
 
-	public static double getMoveValue(BreakthroughState board, BreakthroughMove move) {
-
+	public static double getMoveValue(BreakthroughState board, BreakthroughMove move, int depthLimit) {
+		
 		GameState.Who currTurn = board.getWho();
 
 		char ch = board.board[move.endingRow][move.endingCol];
 		char pl = board.board[move.startRow][move.startCol];
 		board.makeMove(move);
-
+		
 		double val = alphabeta(board, 1, Double.NEGATIVE_INFINITY,
-				Double.POSITIVE_INFINITY);
-
+				Double.POSITIVE_INFINITY, depthLimit);
+		//if(val == Double.NaN) System.out.println("Killed it");
 		// System.out.println(gameState.toString());
 
 		// reverting move
@@ -202,17 +222,27 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 
 	private static double alphabeta(BreakthroughState brd, int currDepth,
-			double alpha, double beta) {
+			double alpha, double beta, int depthLimit) {
+		
+		
+		if(Thread.interrupted()) {
+//			System.out.println("Thread Killed");
+			return Double.NaN;
+		}
+		
+		
 		boolean toMaximize = (brd.getWho() == GameState.Who.HOME);
 		boolean toMinimize = !toMaximize;
 
 		boolean isTerminal = brd.status != GameState.Status.GAME_ON;
 		// System.out.println("-----------STARTING NEW-------------");
-		double bestScore = (brd.getWho() == GameState.Who.HOME) ? Double.NEGATIVE_INFINITY
-				: Double.POSITIVE_INFINITY;
+		double bestScore = (brd.getWho() == GameState.Who.HOME) ? -Double.MAX_VALUE/currDepth
+				: Double.MAX_VALUE/currDepth;
 		if (isTerminal) {
+			
 			return bestScore;
 		} else if (currDepth == depthLimit) {
+			
 			return evalBoard(brd);
 		}
 
@@ -226,7 +256,7 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			char pl = brd.board[mv.startRow][mv.startCol];
 			brd.makeMove(mv);
 
-			double temp = alphabeta(brd, currDepth + 1, alpha, beta);
+			double temp = alphabeta(brd, currDepth + 1, alpha, beta, depthLimit);
 
 			// System.out.println(gameState.toString());
 
@@ -236,6 +266,11 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			brd.numMoves--;
 			brd.status = GameState.Status.GAME_ON;
 			brd.who = currTurn;
+			
+			if(Double.isNaN(temp)){
+				//System.out.println("Killed");
+				return temp;
+			}
 
 			if (toMaximize && temp > bestScore) {
 				bestScore = temp;
@@ -246,12 +281,12 @@ public class OurBreakthroughPlayer extends GamePlayer {
 			// Update alpha and beta. Perform pruning, if possible.
 			if (toMinimize) {
 				beta = Math.min(bestScore, beta);
-				if (bestScore <= alpha || bestScore == Double.NEGATIVE_INFINITY) {
+				if (bestScore <= alpha) {
 					return bestScore;
 				}
 			} else {
 				alpha = Math.max(bestScore, alpha);
-				if (bestScore >= beta || bestScore == Double.POSITIVE_INFINITY) {
+				if (bestScore >= beta) {
 					return bestScore;
 				}
 			}
@@ -372,9 +407,10 @@ public class OurBreakthroughPlayer extends GamePlayer {
 	}
 
 	public static void main(String[] args) {
-		GamePlayer p = new OurBreakthroughPlayer("COLEMATTHARRISONPOWERHOUR");
+		GamePlayer p = new OurBreakthroughPlayer(".5, .1, .1, .1");
+		time = p.tournamentParams.integer("GAMETIME") * 2;
 
 		p.compete(args);
-		// p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+//		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
