@@ -65,13 +65,13 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	//public static int depthLimit = 5;
 
-	public static float COUNT_FACTOR = 0.5f;
-	public static float JEP_FACTOR = 0.1f;
+	public static float COUNT_FACTOR = 0.6f;
+	public static float JEP_FACTOR = 0.2f;
 
 	public static float MAX_DIST_FACTOR = 0;//0.20f;
-	public static float MAX_HOLDER = .1f;
-	public static float AVG_DIST_FACTOR = 0.2f;
-	public static int time = 240*2;//BreakthroughState.gameParams.integer("MOVETIME");
+	public static float MAX_HOLDER = .2f;
+	public static float AVG_DIST_FACTOR = 0.3f;
+	public static int time = 480;
 	public static int puzzleTime;
 
 	//public static int turns = 0;
@@ -156,6 +156,36 @@ public class OurBreakthroughPlayer extends GamePlayer {
 		
 		if(moves == 1){
 			//TODO set sleepTime for puzzles
+			boolean allThere = true;
+			int k = 0;
+			BreakthroughState b = (BreakthroughState)brd;
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < BreakthroughState.N; j++) {
+					char c = b.board[i][j];
+					if (c != BreakthroughState.homeSym) {
+						k--;
+						if(k < -1){
+							allThere = false;
+						}
+						break;
+					}
+				}
+			}
+			if(allThere){
+				for (int i = BreakthroughState.N-2; i < BreakthroughState.N; i++) {
+					for (int j = 0; j < BreakthroughState.N; j++) {
+						char c = b.board[i][j];
+						if (c != BreakthroughState.awaySym) {
+							allThere = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			if(!allThere){
+				sleepTime = (puzzleTime * 1000) - 1000;
+			}
 		}
 		
 		
@@ -421,12 +451,13 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	public static void main(String[] args) {
 
-		GamePlayer p = new OurBreakthroughPlayer("Hashbrown");
-		time = p.tournamentParams.integer("GAMETIME") * 2;
+		GamePlayer p = new OurBreakthroughPlayer("new");
+		//time = p.tournamentParams.integer("GAMETIME") * 2;
+		time = 200;
 		puzzleTime = p.tournamentParams.integer("PUZZLEMOVE");
 
 
-		//p.compete(args);
-		p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
+		p.compete(args);
+		//p.solvePuzzles(new String [] {"BTPuzzle1", "BTPuzzle2"});
 	}
 }
