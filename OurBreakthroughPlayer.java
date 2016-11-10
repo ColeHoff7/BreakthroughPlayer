@@ -451,9 +451,9 @@ public class OurBreakthroughPlayer extends GamePlayer {
 
 	public static void main(String[] args) {
 
-		GamePlayer p = new OurBreakthroughPlayer("new");
-		//time = p.tournamentParams.integer("GAMETIME") * 2;
-		time = 200;
+		GamePlayer p = new OurBreakthroughPlayer("Hashbrown");
+		time = (int) (p.tournamentParams.integer("GAMETIME") * 1.6);
+		//time = 200;
 		puzzleTime = p.tournamentParams.integer("PUZZLEMOVE");
 
 
